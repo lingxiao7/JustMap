@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">JustMap</string>
+    <string name="menu_map_common">普通地图</string>
+    <string name="menu_map_site">卫星地图</string>
+    <string name="menu_map_traffic_off">实时交通(off)</string>
+    <string name="menu_map_traffic_on">实时交通(on)</string>
 </resources>
