@@ -6,7 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.support.v7.app.AppCompatActivity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
@@ -16,9 +16,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -37,8 +38,10 @@ import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
-import com.baidu.mapapi.map.Polyline;
+import com.baidu.mapapi.map.PolylineOptions;
+import com.baidu.mapapi.map.TextOptions;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.utils.DistanceUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,17 +62,19 @@ public class MapActivity extends Activity {
     public MyLocationListener mLocationListener;
 
     private boolean isFirstIn = true;
-    private boolean isShowMaker = false;
     private boolean isRefresh = false;
     private double mLatitude;
     private double mLongtitude;
 
-    private ArrayList<Friend> mFriends;
-    private Friend mMy;
+    private ArrayList<Person> mFriends;
+    private ArrayList<Person> mEnemies;
+    private Person mMy;
 
     private Button mFriendsButton;
     private Button mEnemiesButton;
+    private Button mLocationButton;
     private ToggleButton mRefreshToggleButton;
+
 
 
     private IntentFilter receiveFilter;
@@ -78,6 +83,12 @@ public class MapActivity extends Activity {
     private SmsDeliveryStatusReceiver mSmsDeliveryStatusReceiver;
     private String mAddressString;
 
+
+
+    private RadarView radarView;
+    private Thread radarSweepThread;
+
+    private boolean startRadar = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,12 +99,18 @@ public class MapActivity extends Activity {
         //注意该方法要再setContentView方法之前实现
         SDKInitializer.initialize(getApplicationContext());
         setContentView(R.layout.activity_map);
-        initFriends();
+
+
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.rotate_indefinitely);
+        animation.setInterpolator(new LinearInterpolator());
+        initPerson();
         initView();
 
-        mMy = new Friend();
+        mMy = new Person();
         // 定位
         initLocation();
+
+
 
         mFriendsButton = (Button)findViewById(R.id.btn_friends);
         mFriendsButton.setOnClickListener(new View.OnClickListener() {
@@ -104,6 +121,26 @@ public class MapActivity extends Activity {
                 startActivity(i);
             }
         });
+        mEnemiesButton = (Button)findViewById(R.id.btn_enemies);
+        mEnemiesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Start Activity
+                Intent i = new Intent(MapActivity.this, EnemiesActivity.class);
+                startActivity(i);
+            }
+        });
+
+
+        radarView = (RadarView) findViewById(R.id.radar_view);
+
+        radarView.setVisibility(View.VISIBLE);// 设置可见
+        Animation radarAnimEnter = AnimationUtils.loadAnimation(
+                MapActivity.this, R.anim.radar_anim_enter);// 初始化radarView进入动画
+        radarView.startAnimation(radarAnimEnter);// 开始进入动画
+        radarSweepThread = new Thread(new RadarSweep());// 雷达扫描线程
+        radarSweepThread.start();
+        startRadar = false;
 
         mRefreshToggleButton = (ToggleButton)findViewById(R.id.btn_refresh);
         mRefreshToggleButton.setOnClickListener(new View.OnClickListener() {
@@ -114,20 +151,138 @@ public class MapActivity extends Activity {
                     mBaiduMap.clear();
                     refreshOverlays();
                     isRefresh = true;
+                    Animation radarAnimEnter = AnimationUtils.loadAnimation(
+                            MapActivity.this, R.anim.radar_anim_exit);// 初始化radarView退出动画
+                    radarView.startAnimation(radarAnimEnter);// 开始进入动画
+                    radarView.setVisibility(View.INVISIBLE);// 设置不可见
+                    radarSweepThread.interrupt();// 停止扫描更新
+                    startRadar = true;
+                    radarView.setVisibility(View.VISIBLE);// 设置可见
+                    radarAnimEnter = AnimationUtils.loadAnimation(
+                            MapActivity.this, R.anim.radar_anim_enter);// 初始化radarView进入动画
+                    radarView.startAnimation(radarAnimEnter);// 开始进入动画
+                    radarSweepThread = new Thread(new RadarSweep());// 雷达扫描线程
+                    radarSweepThread.start();
+                    startRadar = false;
                 }
                 // 当按钮再次被点击时候响应的事件
                 else {
                     //
                     isRefresh = false;
+
                 }
             }
         });
 
+        mLocationButton = (Button)findViewById(R.id.btn_locate);
+        mLocationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                LatLng latLng = new LatLng(mLatitude, mLongtitude);
+                MapStatusUpdate msu = MapStatusUpdateFactory.newLatLng(latLng);
+
+                String str =  "Latitude: " + mLatitude + "\nLongtitude: " + mLongtitude;
+                Toast.makeText(getApplicationContext(), str.toString(), Toast.LENGTH_SHORT).show();
+                mBaiduMap.animateMapStatus(msu);
+            }
+        });
 
     }
 
-    private void initFriends() {
-        mFriends = FriendLab.getFriendLab(this).getFriends();
+    private void initOverlays() {
+
+        for (Person f : mFriends) {
+            if (f.getLatitude() != null) {
+
+                double latitude = Double.valueOf(f.getLatitude());
+                double longtitude = Double.valueOf(f.getLongtitude());
+                addOverlays(f, latitude, longtitude, false);
+            }
+        }
+
+        for (Person e : mEnemies) {
+
+            if (e.getLatitude() != null) {
+
+                double latitude = Double.valueOf(e.getLatitude());
+                double longtitude = Double.valueOf(e.getLongtitude());
+                addOverlays(e, latitude, longtitude, true);
+            }
+        }
+    }
+
+
+    private void addOverlays(Person f, double latitude, double longtitude, boolean isEnemy) {
+
+        //构建Marker图标
+        BitmapDescriptor bitmap;
+        int color;
+        if (isEnemy) {
+            color = Color.RED;
+            bitmap = BitmapDescriptorFactory.fromResource(R.drawable.enemy_marker);
+        }
+        else {
+            color = Color.GREEN;
+            bitmap = BitmapDescriptorFactory.fromResource(R.drawable.friend_marker);
+        }
+
+        Marker marker;
+        String str = f.getName() + "\n" + f.getPhoneNumber();
+
+
+
+        //定义Maker坐标点
+        LatLng point = new LatLng(latitude, longtitude);
+        //构建MarkerOption，用于在地图上添加Marker
+        OverlayOptions option = new MarkerOptions()
+                .position(point)
+                .icon(bitmap)
+                .zIndex(9); // 设置marker所在层级;
+
+        OverlayOptions textOption = new TextOptions()
+                .fontSize(24)
+                .fontColor(0xFF000000)
+                .text(str)
+                .position(point);
+        //在地图上添加Marker，并显示
+        marker = (Marker) mBaiduMap.addOverlay(option);
+        mBaiduMap.addOverlay(textOption);
+
+        LatLng point2 = new LatLng(mLatitude, mLongtitude);
+        List<LatLng> pts = new ArrayList<LatLng>();
+        pts.add(point);
+        pts.add(point2);
+        //构建用户绘制多边形的Option对象
+        OverlayOptions polylineOption = new PolylineOptions()
+                .width(3)
+                .points(pts)
+                .color(color);
+        //在地图上添加多边形Option，用于显示
+        mBaiduMap.addOverlay(polylineOption);
+
+        //计算距离
+        LatLng point3 = new LatLng((mLatitude + latitude) / 2, (mLongtitude + longtitude) / 2);
+        double dist = DistanceUtil.getDistance(point, point2);
+
+        OverlayOptions textOption2 = new TextOptions()
+                .fontSize(24)
+                .fontColor(0xFF000000)
+                .text(Double.toString(Math.ceil(dist)) + 'm')
+                .position(point3);
+        //在地图上添加Marker，并显示
+        mBaiduMap.addOverlay(textOption2);
+
+        //使用marker携带info信息，当点击事件的时候可以通过marker获得info信息
+        Bundle bundle = new Bundle();
+        //info必须实现序列化接口
+        bundle.putSerializable("info", f);
+        marker.setExtraInfo(bundle);
+    }
+
+    private void initPerson() {
+        mFriends = PersonLab.get(this).getFriends();
+        mEnemies = PersonLab.get(this).getEnemies();
     }
 
     private void initLocation(){
@@ -158,7 +313,7 @@ public class MapActivity extends Activity {
             public boolean onMarkerClick(Marker marker) {
                 //从marker中获取info信息
                 Bundle bundle = marker.getExtraInfo();
-                Friend f =  (Friend) bundle.getSerializable("info");
+                Person f =  (Person) bundle.getSerializable("info");
 
                 String str = f.getName() + " " + f.getPhoneNumber() + "\n" + f.getLatitude() + " " + f.getLongtitude();
 
@@ -168,36 +323,6 @@ public class MapActivity extends Activity {
             }
         });
 
-        //构建Marker图标
-        BitmapDescriptor bitmap = BitmapDescriptorFactory
-                .fromResource(R.drawable.icon_friends);
-        Marker marker;
-        isShowMaker = true;
-
-        for (Friend f : mFriends) {
-            if (f.getLatitude() != null) {
-
-
-                double latitude = Double.valueOf(f.getLatitude());
-                double longtitude = Double.valueOf(f.getLongtitude());
-
-                //定义Maker坐标点
-                LatLng point = new LatLng(latitude, longtitude);
-                //构建MarkerOption，用于在地图上添加Marker
-                OverlayOptions option = new MarkerOptions()
-                        .position(point)
-                        .icon(bitmap)
-                        .zIndex(9); // 设置marker所在层级;
-                //在地图上添加Marker，并显示
-                marker = (Marker) mBaiduMap.addOverlay(option);
-
-                //使用marker携带info信息，当点击事件的时候可以通过marker获得info信息
-                Bundle bundle = new Bundle();
-                //info必须实现序列化接口
-                bundle.putSerializable("info", f);
-                marker.setExtraInfo(bundle);
-            }
-        }
     }
 
     @Override
@@ -292,18 +417,7 @@ public class MapActivity extends Activity {
 
                 String str =  "Latitude: " + mLatitude + "\nLongtitude: " + mLongtitude;
                 Toast.makeText(getApplicationContext(), str.toString(), Toast.LENGTH_SHORT).show();
-
-//                //定义Maker坐标点
-//                LatLng point = new LatLng(mLatitude + 0.00001, mLongtitude + 0.00001);
-//                //构建Marker图标
-//                BitmapDescriptor bitmap = BitmapDescriptorFactory
-//                        .fromResource(R.drawable.icon_friends);
-//                //构建MarkerOption，用于在地图上添加Marker
-//                OverlayOptions option = new MarkerOptions()
-//                        .position(point)
-//                        .icon(bitmap);
-//                //在地图上添加Marker，并显示
-//                mBaiduMap.addOverlay(option);
+                initOverlays();
                 mBaiduMap.animateMapStatus(msu);
 
                 isFirstIn = false;
@@ -326,7 +440,7 @@ public class MapActivity extends Activity {
 
 
     private void refreshOverlays() {
-        for (Friend f : mFriends) {
+        for (Person f : mFriends) {
             String phone = f.getPhoneNumber().toString();
             String context = "Where are you? " + f.getName().toString();
             smsSendMsg(phone, context);
@@ -401,12 +515,12 @@ public class MapActivity extends Activity {
 
                 //content.setText(fullMessage);
                 sms += fullMessage;
-               /* if ("10086".equals(address)) {//测试截断短信
-                    abortBroadcast();
-                }*/
+//                if ("10086".equals(mAddressString)) {//测试截断短信
+//                    abortBroadcast();
+//                }
             }
 
-            Friend f = FriendLab.getFriendLab(MapActivity.this).getFriend(mAddressString);
+            Person f = PersonLab.get(MapActivity.this).getFriend(mAddressString);
             if (sms.charAt(0) == 'W') {
                 StringBuffer str1 = new StringBuffer(256);
                 str1.append("latitude : ");
@@ -442,27 +556,13 @@ public class MapActivity extends Activity {
                 f.setLatitude(str[1]);
                 f.setLongtitude(str[3]);
                 f.setAccuracy(str[5]);
-
                 double latitude = Double.valueOf(str[1]);
                 double longtitude = Double.valueOf(str[3]);
 
-                //定义Maker坐标点
-                LatLng point = new LatLng(latitude, longtitude);
-                //构建Marker图标
-                BitmapDescriptor bitmap = BitmapDescriptorFactory
-                        .fromResource(R.drawable.icon_friends);
-                //构建MarkerOption，用于在地图上添加Marker
-                OverlayOptions option = new MarkerOptions()
-                        .position(point)
-                        .icon(bitmap);
-                //在地图上添加Marker，并显示
-                Marker marker = (Marker) mBaiduMap.addOverlay(option);
-
-                //使用marker携带info信息，当点击事件的时候可以通过marker获得info信息
-                Bundle bundle = new Bundle();
-                //info必须实现序列化接口
-                bundle.putSerializable("info", f);
-                marker.setExtraInfo(bundle);
+                if (PersonLab.get(getApplication()).getFriend(mAddressString) != null)
+                    addOverlays(f, latitude, longtitude, false);
+                else
+                    addOverlays(f, latitude, longtitude, true);
              }
             else if (sms.charAt(0) == 'a') {
                 sms = sms.replace(" : ", ":");
@@ -489,6 +589,30 @@ public class MapActivity extends Activity {
             manager.sendTextMessage(toWho, null, text, sentIntent, deliveryIntent);
         }
         Toast.makeText(getApplicationContext(), "发送完毕", Toast.LENGTH_SHORT).show();
+    }
+
+
+    /**
+     * @ClassName RadarSweep
+     * @Description 雷达扫描动画刷新线程类
+     */
+    private class RadarSweep implements Runnable {
+        int i = 1;
+
+        @Override
+        public void run() {
+
+            while (!Thread.currentThread().isInterrupted() && i == 1) {
+                try {
+                    radarView.postInvalidate();// 刷新radarView, 执行onDraw();
+                    Thread.sleep(10);// 暂停当前线程，更新UI线程
+                } catch (InterruptedException e) {
+                    i = 0;// 结束当前扫描线程标志符
+                    break;
+                }
+            }
+        }
+
     }
 
 }

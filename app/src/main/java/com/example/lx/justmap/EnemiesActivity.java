@@ -19,13 +19,13 @@ import java.util.ArrayList;
 /**
  * Created by lx on 2016/10/16.
  */
-public class FriendsActivity  extends Activity implements PersonAdapter.ListItemClickHelp {
+public class EnemiesActivity extends Activity implements PersonAdapter.ListItemClickHelp {
     private static final String TAG = "FriendsActivity";
 
     //定义一个startActivityForResult（）方法用到的整型值
-    private final int requestCode = 0;
+    private final int requestCode = 2;
 
-    private ArrayList<Person> mFriends;
+    private ArrayList<Person> mEnemies;
     private ListView mListView;
 
     private PersonAdapter mAdapter;
@@ -34,19 +34,19 @@ public class FriendsActivity  extends Activity implements PersonAdapter.ListItem
     private ToggleButton mEditToggleButton;
     private Button mAddButton;
     private Button mRadarButton;
-    private Button mEnemiesButton;
+    private Button mFriendsButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);//隐藏状态栏
-        setContentView(R.layout.friends_list);
+        setContentView(R.layout.enemies_list);
 
-        mFriends = PersonLab.get(this).getFriends();
+        mEnemies = PersonLab.get(this).getEnemies();
 
-        mListView  =  (ListView)findViewById(R.id.lvw_friends_list);
-        mAdapter = new PersonAdapter(this , mFriends, this, true);
+        mListView  =  (ListView)findViewById(R.id.lvw_enemies_list);
+        mAdapter = new PersonAdapter(this , mEnemies, this, false);
         mListView.setAdapter(mAdapter); //为ListView设置适配器
 
         mEditToggleButton = (ToggleButton)findViewById(R.id.btn_enemies_list_edit);
@@ -55,28 +55,28 @@ public class FriendsActivity  extends Activity implements PersonAdapter.ListItem
             public void onClick(View view) {
                 if (mEditToggleButton.isChecked()) {
                     if (mPosition == -1) return;
-                    Intent intent = new Intent(FriendsActivity.this, FriendsDetailActivity.class);
+                    Intent intent = new Intent(EnemiesActivity.this, EnemiesDetailActivity.class);
                     Bundle mBundle = new Bundle();
-                    mBundle.putSerializable(FriendsDetailActivity.EXTRA_FRIEND_ID, mFriends.get(mPosition).getId());
+                    mBundle.putSerializable(EnemiesDetailActivity.EXTRA_ENEMY_ID, mEnemies.get(mPosition).getId());
                     intent.putExtras(mBundle);
                     startActivityForResult(intent, requestCode);
                 }
                 else {
-                    PersonLab.get(FriendsActivity.this).savaLab();
+                    PersonLab.get(EnemiesActivity.this).savaLab();
                 }
             }
         });
 
 
-        mAddButton = (Button)findViewById(R.id.btn_friends_list_add);
+        mAddButton = (Button)findViewById(R.id.btn_enemies_list_add);
         mAddButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 AlertDialog.Builder customizeDialog =
-                        new AlertDialog.Builder(FriendsActivity.this);
-                final View dialogView = LayoutInflater.from(FriendsActivity.this)
-                        .inflate(R.layout.dialog_add_friend,null);
+                        new AlertDialog.Builder(EnemiesActivity.this);
+                final View dialogView = LayoutInflater.from(EnemiesActivity.this)
+                        .inflate(R.layout.dialog_add_enemy,null);
                 //customizeDialog.setTitle("添加Friend");
                 customizeDialog.setView(dialogView);
 
@@ -86,10 +86,10 @@ public class FriendsActivity  extends Activity implements PersonAdapter.ListItem
                 okButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        EditText nameEditText = (EditText)dialogView.findViewById(R.id.txt_friend_name);
-                        EditText numberEditText = (EditText)dialogView.findViewById(R.id.txt_friend_number);
+                        EditText nameEditText = (EditText)dialogView.findViewById(R.id.txt_enemy_name);
+                        EditText numberEditText = (EditText)dialogView.findViewById(R.id.txt_enemy_number);
 
-                        if (nameEditText.getText() == null || numberEditText.getText() == null) {
+                        if (nameEditText.getText().toString().equals("") || numberEditText.getText().toString().equals("")) {
                             dialog.dismiss();
                             return;
                         }
@@ -97,9 +97,9 @@ public class FriendsActivity  extends Activity implements PersonAdapter.ListItem
                         Person f = new Person();
                         f.setName(nameEditText.getText().toString());
                         f.setPhoneNumber(numberEditText.getText().toString());
-                        mFriends.add(f);
+                        mEnemies.add(f);
 
-                        mAdapter = new PersonAdapter(FriendsActivity.this, mFriends, FriendsActivity.this, true);
+                        mAdapter = new PersonAdapter(EnemiesActivity.this, mEnemies, EnemiesActivity.this, false);
                         mListView.setAdapter(mAdapter); //为ListView设置适配器
                         dialog.dismiss();
 
@@ -117,25 +117,25 @@ public class FriendsActivity  extends Activity implements PersonAdapter.ListItem
             }
         });
 
-        mRadarButton = (Button)findViewById(R.id.btn_friends_list_radar);
+        mRadarButton = (Button)findViewById(R.id.btn_enemies_list_radar);
         mRadarButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FriendsActivity.this.setResult(RESULT_OK);
-                FriendsActivity.this.finish();
+
+                EnemiesActivity.this.setResult(RESULT_OK);
+                EnemiesActivity.this.finish();
             }
         });
 
-        mEnemiesButton = (Button)findViewById(R.id.btn_friends_list_enemies);
-        mEnemiesButton.setOnClickListener(new View.OnClickListener() {
+        mFriendsButton = (Button)findViewById(R.id.btn_enemies_list_friends);
+        mFriendsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                Intent intent = new Intent(FriendsActivity.this, EnemiesActivity.class);
+                Intent intent = new Intent(EnemiesActivity.this, FriendsActivity.class);
                 startActivityForResult(intent, requestCode);
             }
         });
-
     }
 
     /**
@@ -146,8 +146,8 @@ public class FriendsActivity  extends Activity implements PersonAdapter.ListItem
         super.onActivityResult(requestCode, resultCode, data);
         switch(resultCode){
             case RESULT_OK:{//接收并显示Activity传过来的值
-                FriendsActivity.this.setResult(RESULT_OK);
-                FriendsActivity.this.finish();
+                EnemiesActivity.this.setResult(RESULT_OK);
+                EnemiesActivity.this.finish();
                 break;
             }
             default:
@@ -164,7 +164,7 @@ public class FriendsActivity  extends Activity implements PersonAdapter.ListItem
     protected void onResume() {
         super.onResume();
 
-        mAdapter = new PersonAdapter(this , mFriends, this, true);
+        mAdapter = new PersonAdapter(this , mEnemies, this, false);
         mListView.setAdapter(mAdapter); //为ListView设置适配器
     }
 
@@ -173,16 +173,17 @@ public class FriendsActivity  extends Activity implements PersonAdapter.ListItem
     public void onClick(int position, int index) {
         switch (index) {
             case 0:
-                final Person f = mFriends.get(position);
+                final Person f = mEnemies.get(position);
 
                 AlertDialog.Builder customizeDialog =
-                        new AlertDialog.Builder(FriendsActivity.this);
-                final View dialogView = LayoutInflater.from(FriendsActivity.this)
+                        new AlertDialog.Builder(EnemiesActivity.this);
+                final View dialogView = LayoutInflater.from(EnemiesActivity.this)
                         .inflate(R.layout.dialog_delete,null);
                 //customizeDialog.setTitle("添加Friend");
                 customizeDialog.setView(dialogView);
                 TextView numberTextView = (TextView)dialogView.findViewById(R.id.txt_friend_number);
-                numberTextView.setText(f.getPhoneNumber().toString());
+                String number = f.getPhoneNumber().toString();
+                numberTextView.setText(number);
 
 
                 final AlertDialog dialog = customizeDialog.show();
@@ -195,7 +196,7 @@ public class FriendsActivity  extends Activity implements PersonAdapter.ListItem
                         mPosition = -1;
                         dialog.dismiss();
 
-                        mAdapter = new PersonAdapter(FriendsActivity.this , mFriends, FriendsActivity.this, true);
+                        mAdapter = new PersonAdapter(EnemiesActivity.this , mEnemies, EnemiesActivity.this, false);
                         mListView.setAdapter(mAdapter); //为ListView设置适配器
                     }
                 });

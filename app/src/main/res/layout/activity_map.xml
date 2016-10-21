@@ -3,9 +3,10 @@
 	android:layout_width="fill_parent" android:layout_height="fill_parent"
 	android:gravity="center_horizontal">
 
-    <com.baidu.mapapi.map.MapView android:id="@+id/bmapView" android:layout_marginTop="20dp"
-		android:layout_width="fill_parent" android:layout_height="500dp"
-		android:enabled="true" android:clickable="false"/>
+	<com.baidu.mapapi.map.MapView android:id="@+id/bmapView" android:layout_marginTop="20dp"
+								  android:layout_width="fill_parent" android:layout_height="500dp"
+								  android:enabled="true" android:clickable="false"/>
+
 		<!--android:apiKey="0oeFjX-kCSpikm2zkq20DUk0KG-DN1dflwEjLdg"-->
 	<LinearLayout android:id="@+id/header" android:layout_width="fill_parent"
 				  android:layout_height="35dp" android:background="@drawable/radar_header"
@@ -25,6 +26,13 @@
                  android:layout_below="@id/empty_filler1">
 		<RelativeLayout  android:paddingTop="10dp"  android:layout_height="450dp"
 			android:layout_width="fill_parent" >
+
+			<com.example.lx.justmap.RadarView
+				android:id="@+id/radar_view"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_centerInParent="true"
+				android:visibility="visible"/>
 			<ImageView
 			 android:id="@+id/imageview_sweep"
 			 android:layout_marginLeft ="35dp"
@@ -38,12 +46,12 @@
                         android:background="@drawable/centre_radar"
 						android:layout_width="fill_parent"
                         android:layout_height="450dp">
-			<Button android:id="@+id/btn_locate" android:layout_width="wrap_content"
-					android:layout_height="wrap_content" android:background="@drawable/button_locate_def"
+			<Button android:id="@+id/btn_locate" android:layout_width="60dp"
+					android:layout_height="60dp" android:background="@drawable/button_locate_def"
 					android:layout_alignParentTop="true" android:layout_alignParentLeft="true" />
 
-			<ToggleButton android:id="@+id/btn_refresh" android:layout_width="wrap_content"
-					android:layout_height="wrap_content" android:background="@drawable/button_refresh_def"
+			<ToggleButton android:id="@+id/btn_refresh" android:layout_width="60dp"
+					android:layout_height="60dp" android:background="@drawable/button_refresh_def"
 					android:layout_alignParentTop="true" android:layout_alignParentRight="true"
 					android:textOff="" android:textOn="" />
 		</RelativeLayout>

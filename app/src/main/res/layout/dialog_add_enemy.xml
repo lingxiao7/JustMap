@@ -5,7 +5,7 @@
 
 	<LinearLayout android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:orientation="horizontal"
-		android:layout_marginTop="110dp" android:layout_marginRight="20dp"
+		android:layout_marginTop="20dp" android:layout_marginRight="20dp"
 		android:layout_marginLeft="20dp">
 
 		<TextView android:layout_width="wrap_content"
@@ -36,13 +36,14 @@
 		android:layout_height="wrap_content" android:orientation="horizontal"
 		android:gravity="center_horizontal" android:layout_margin="5dp">
 
-		<Button android:id="@+id/btn_dialog_ok" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:background="@drawable/dialog_ok_def"
-			android:layout_marginRight="10px" />
+		<Button android:id="@+id/btn_dialog_ok" android:layout_width="60dp"
+			android:layout_height="60dp" android:background="@drawable/dialog_ok_def"
+			android:layout_marginRight="20dp" />
 
 		<Button android:id="@+id/btn_dialog_close"
-			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:background="@drawable/dialog_close_def" />
+			android:layout_width="60dp" android:layout_height="60dp"
+			android:background="@drawable/dialog_close_def"
+				android:layout_marginLeft="20dp" />
 
 	</LinearLayout>
 </LinearLayout>

@@ -27,61 +27,61 @@
 		android:paddingTop="10px" android:paddingRight="10px"
 		android:paddingLeft="40px" android:layout_below="@id/vgp_enemy_detail_header">
 
-		<TextView android:id="@+id/txt_enemy_name"
+		<TextView android:id="@+id/txt_enemy_name" android:layout_marginLeft="40dp"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:layout_alignParentLeft="true" android:textColor="#ec3239"
 			android:paddingTop="3dp" android:paddingLeft="10dp" android:textSize="18dp" />
 
-		<Button android:id="@+id/btn_delete" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:background="@drawable/button_list_delete_def"
+		<Button android:id="@+id/btn_delete" android:layout_width="35dp"
+			android:layout_height="35dp" android:background="@drawable/button_list_delete_def"
 			android:layout_alignParentRight="true" />
 
 	</RelativeLayout>
 
 	<RelativeLayout android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:background="@drawable/enemy_detail_centre_background"
+		android:layout_height="fill_parent" android:background="@drawable/enemy_detail_centre_background"
 		android:paddingRight="10dp" android:paddingTop="10dp" android:layout_below="@id/vgp_enemy_detail" >
 		<TextView android:id="@+id/txt_enemy_number"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:layout_alignParentRight="true" android:layout_marginTop="4dp"
+			android:layout_alignParentRight="true" android:layout_marginTop="40dp"
 			android:layout_marginBottom="32dp" android:textColor="@android:color/white"
-			android:textSize="15dp" />
+				  android:textSize="20sp" android:text="text" />
 
 		<TextView android:id="@+id/txt_enemy_long_lang"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:layout_alignParentRight="true" android:layout_marginBottom="32dp"
 			android:layout_below="@id/txt_enemy_number" android:textColor="@android:color/white"
-			android:textSize="15dp" />
+				  android:textSize="20sp" android:text="text" />
 
 		<TextView android:id="@+id/txt_enemy_altitude"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:layout_alignParentRight="true" android:layout_marginBottom="32dp"
 			android:layout_below="@id/txt_enemy_long_lang" android:textColor="@android:color/white"
-			android:textSize="15dp" />
+				  android:textSize="20sp" android:text="text"/>
 
 		<TextView android:id="@+id/txt_enemy_accuracy"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:layout_alignParentRight="true" android:layout_marginBottom="32dp"
 			android:layout_below="@id/txt_enemy_altitude" android:textColor="@android:color/white"
-			android:textSize="15dp" />
+				  android:textSize="20sp" android:text="text" />
 
 		<TextView android:id="@+id/txt_enemy_nearest_city"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:layout_alignParentRight="true" android:layout_marginBottom="24dp"
 			android:layout_below="@id/txt_enemy_accuracy" android:textColor="@android:color/white"
-			android:textSize="15dp" />
+				  android:textSize="20sp" android:text="text" />
 
 		<TextView android:id="@+id/txt_enemy_secs_last_update"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:layout_alignParentRight="true" android:layout_marginBottom="32dp"
 			android:layout_below="@id/txt_enemy_nearest_city" android:textColor="@android:color/white"
-			android:textSize="15dp" />
+				  android:textSize="20sp" android:text="text" />
 
 		<TextView android:id="@+id/txt_enemy_secs_next_update"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:layout_alignParentRight="true" android:layout_marginBottom="32dp"
 			android:layout_below="@id/txt_enemy_secs_last_update"
-			android:textColor="@android:color/white" android:textSize="15dp" />
+			android:textColor="@android:color/white" android:textSize="20sp" android:text="text" />
 	</RelativeLayout>
 
 	<RelativeLayout android:id="@+id/vgp_footer"

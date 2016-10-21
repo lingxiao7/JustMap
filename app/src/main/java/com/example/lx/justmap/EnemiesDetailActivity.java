@@ -17,11 +17,11 @@ import java.util.UUID;
 /**
  * Created by lx on 2016/10/16.
  */
-public class FriendsDetailActivity extends Activity{
-    public static final String EXTRA_FRIEND_ID = "com.example.lx.justmap.friend_id";
+public class EnemiesDetailActivity extends Activity{
+    public static final String EXTRA_ENEMY_ID = "com.example.lx.justmap.enemy_id";
 
     //定义一个startActivityForResult（）方法用到的整型值
-    private final int requestCode = 1;
+    private final int requestCode = 3;
 
     private Person mPerson;
 
@@ -37,29 +37,29 @@ public class FriendsDetailActivity extends Activity{
     private TextView mNextUpdatetextview;
 
     private Button mRadarButton;
-    private Button mEnemiesButton;
+    private Button mFriendsButton;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);//隐藏状态栏
-        setContentView(R.layout.friend_detail);
+        setContentView(R.layout.enemy_detail);
 
         //接收Activity传过来的值
         final Intent data = getIntent();
 
-        UUID friendId = (UUID)this.getIntent().getSerializableExtra(EXTRA_FRIEND_ID);
+        UUID Id = (UUID)this.getIntent().getSerializableExtra(EXTRA_ENEMY_ID);
 
-        mPerson = PersonLab.get(this).getFriend(friendId);
+        mPerson = PersonLab.get(this).getEnemy(Id);
 
         initView();
 
-        mListButton = (Button)findViewById(R.id.btn_friends_list);
+        mListButton = (Button)findViewById(R.id.btn_enemies_list);
         mListButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FriendsDetailActivity.this.finish();
+                EnemiesDetailActivity.this.finish();
             }
         });
 
@@ -69,8 +69,8 @@ public class FriendsDetailActivity extends Activity{
             public void onClick(View view) {
 
                 AlertDialog.Builder customizeDialog =
-                        new AlertDialog.Builder(FriendsDetailActivity.this);
-                final View dialogView = LayoutInflater.from(FriendsDetailActivity.this)
+                        new AlertDialog.Builder(EnemiesDetailActivity.this);
+                final View dialogView = LayoutInflater.from(EnemiesDetailActivity.this)
                         .inflate(R.layout.dialog_delete,null);
                 //customizeDialog.setTitle("添加Friend");
                 customizeDialog.setView(dialogView);
@@ -84,9 +84,9 @@ public class FriendsDetailActivity extends Activity{
                 okButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        PersonLab.get(getApplication()).deleteFriend(mPerson);
+                        PersonLab.get(getApplication()).deleteEnemy(mPerson);
                         dialog.dismiss();
-                        FriendsDetailActivity.this.finish();
+                        EnemiesDetailActivity.this.finish();
                     }
                 });
 
@@ -107,47 +107,49 @@ public class FriendsDetailActivity extends Activity{
             public void onClick(View view) {
                 //跳转回MainActivity
                 //注意下面的RESULT_OK常量要与回传接收的Activity中onActivityResult（）方法一致
-                FriendsDetailActivity.this.setResult(RESULT_OK);
-                FriendsDetailActivity.this.finish();
+                EnemiesDetailActivity.this.setResult(RESULT_OK);
+                EnemiesDetailActivity.this.finish();
             }
         });
 
-        mEnemiesButton = (Button)findViewById(R.id.btn_enemies);
-        mEnemiesButton.setOnClickListener(new View.OnClickListener() {
+
+        mFriendsButton = (Button)findViewById(R.id.btn_friends);
+        mFriendsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                Intent intent = new Intent(FriendsDetailActivity.this, EnemiesActivity.class);
+                Intent intent = new Intent(EnemiesDetailActivity.this, FriendsActivity.class);
                 startActivityForResult(intent, requestCode);
             }
         });
     }
 
     private void initView() {
-        mNameTextView = (TextView)findViewById(R.id.txt_friend_name);
+        mNameTextView = (TextView)findViewById(R.id.txt_enemy_name);
         mNameTextView.setText(mPerson.getName());
 
-        mNumberTextView = (TextView)findViewById(R.id.txt_friend_number);
+        mNumberTextView = (TextView)findViewById(R.id.txt_enemy_number);
         mNumberTextView.setText(mPerson.getPhoneNumber());
 
-        mLongLaTextView = (TextView)findViewById(R.id.txt_friend_long_lang);
+        mLongLaTextView = (TextView)findViewById(R.id.txt_enemy_long_lang);
         mLongLaTextView.setText(mPerson.getLatitude() + "/" +  mPerson.getLongtitude());
 
-        mAltitudeTextView = (TextView)findViewById(R.id.txt_friend_altitude);
+        mAltitudeTextView = (TextView)findViewById(R.id.txt_enemy_altitude);
         mAltitudeTextView.setText(mPerson.getAltitude());
 
-        mAccuracyTextView = (TextView)findViewById(R.id.txt_friend_accuracy);
+        mAccuracyTextView = (TextView)findViewById(R.id.txt_enemy_accuracy);
         mAccuracyTextView.setText(mPerson.getAccuracy());
 
-        mNearAdTextView = (TextView)findViewById(R.id.txt_friend_nearest_city);
+        mNearAdTextView = (TextView)findViewById(R.id.txt_enemy_nearest_city);
         mNearAdTextView.setText(mPerson.getNearestAddress());
 
-        mLastUpdateTextview = (TextView)findViewById(R.id.txt_friend_secs_last_update);
+        mLastUpdateTextview = (TextView)findViewById(R.id.txt_enemy_secs_last_update);
         mLastUpdateTextview.setText(mPerson.getSSinceUpdate());
 
-        mNextUpdatetextview = (TextView)findViewById(R.id.txt_friend_secs_next_update);
+        mNextUpdatetextview = (TextView)findViewById(R.id.txt_enemy_secs_next_update);
         mNextUpdatetextview.setText((mPerson.getSUtilUpdate()));
     }
+
 
 
     /**
@@ -158,8 +160,8 @@ public class FriendsDetailActivity extends Activity{
         super.onActivityResult(requestCode, resultCode, data);
         switch(resultCode){
             case RESULT_OK:{//接收并显示Activity传过来的值
-                FriendsDetailActivity.this.setResult(RESULT_OK);
-                FriendsDetailActivity.this.finish();
+                EnemiesDetailActivity.this.setResult(RESULT_OK);
+                EnemiesDetailActivity.this.finish();
                 break;
             }
             default:

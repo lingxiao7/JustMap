@@ -22,20 +22,20 @@ import java.util.ArrayList;
  * class :JSONSerializer
  * This class can save diaries or load diaries in the file named by mFilename.
  */
-public class FriendJSONSerializer {
+public class PersonJSONSerializer {
     private static final String TAG = "JustMapJSONSerializer";
 
 
     private Context mContext;
     private String mFileName;
 
-    public FriendJSONSerializer(Context c, String f) {
+    public PersonJSONSerializer(Context c, String f) {
         mContext = c;
         mFileName = f;
     }
 
-    public ArrayList<Friend> loadFriends() throws IOException, JSONException {
-        ArrayList<Friend> friends = new ArrayList<Friend>();
+    public ArrayList<Person> loadFriends() throws IOException, JSONException {
+        ArrayList<Person> persons = new ArrayList<Person>();
         BufferedReader reader = null;
         try {
             //
@@ -52,7 +52,7 @@ public class FriendJSONSerializer {
                     .nextValue();
             //
             for (int i = 0; i < array.length(); i++) {
-                friends.add(new Friend(array.getJSONObject(i)));
+                persons.add(new Person(array.getJSONObject(i)));
             }
         } catch (FileNotFoundException e) {
             //
@@ -60,13 +60,13 @@ public class FriendJSONSerializer {
             if (reader != null)
                 reader.close();
         }
-        return friends;
+        return persons;
     }
 
-    public void saveFriends(ArrayList<Friend> friends) throws JSONException, IOException {
+    public void saveFriends(ArrayList<Person> persons) throws JSONException, IOException {
         // Build an array in JSON
         JSONArray array = new JSONArray();
-        for (Friend f : friends)
+        for (Person f : persons)
             array.put(f.toJSON());
 
         // Write the file to disk
@@ -76,7 +76,7 @@ public class FriendJSONSerializer {
                     .openFileOutput(mFileName, Context.MODE_PRIVATE);
             writer = new OutputStreamWriter(out);
             writer.write(array.toString());
-            Log.d(TAG, "friends saved to file");
+            Log.d(TAG, "persons saved to file");
 
         } finally {
             if (writer != null)

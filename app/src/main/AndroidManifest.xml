@@ -52,9 +52,10 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".FriendsActivity">
-        </activity>
+        <activity android:name=".FriendsActivity">  </activity>
         <activity android:name=".FriendsDetailActivity"> </activity>
+        <activity android:name=".EnemiesActivity">  </activity>
+        <activity android:name=".EnemiesDetailActivity"> </activity>
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"

@@ -4,34 +4,33 @@
    android:layout_height="fill_parent"
    android:orientation="vertical"
    android:background="@drawable/dialog_delete_friend"
-   android:gravity="center"
-   android:paddingTop="100px">
+   android:gravity="center">
 
    <LinearLayout
    android:gravity="center"
-   android:layout_width="fill_parent"
+   android:layout_width="wrap_content"
    android:layout_height="wrap_content"
    android:orientation="horizontal"
-   android:paddingTop="100px">
+   android:paddingTop="150px">
 
-   	<TextView android:id="@+id/txt_friend_number_label"
-	  android:layout_width="wrap_content"
-	  android:layout_height="wrap_content"
-	  android:textSize="20sp"
-	  android:text="NUMBER: "/>
+		<TextView android:id="@+id/txt_friend_number_label"
+		  android:layout_width="wrap_content"
+		  android:layout_height="wrap_content"
+		  android:textSize="20sp"
+		  android:text="NUMBER: "/>
 
-	<!--The text is hard-coded here but will be set programatically in code in final assembly-->
-	<TextView android:id="@+id/txt_friend_number"
-	  android:layout_width="wrap_content"
-	  android:layout_height="wrap_content"
-	  android:textSize="20sp"
-	  android:text="1234567890"/>
+		<!--The text is hard-coded here but will be set programatically in code in final assembly-->
+		<TextView android:id="@+id/txt_friend_number"
+		  android:layout_width="wrap_content"
+		  android:layout_height="wrap_content"
+		  android:textSize="20sp"
+		  android:text="1234567890"/>
 
    </LinearLayout>
 
    <LinearLayout
 	   android:gravity="center"
-	   android:layout_width="fill_parent"
+	   android:layout_width="wrap_content"
 	   android:layout_height="wrap_content"
 	   android:orientation="horizontal">
 

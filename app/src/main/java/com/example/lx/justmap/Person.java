@@ -10,7 +10,7 @@ import java.util.UUID;
 /**
  * Created by lx on 2016/10/16.
  */
-public class Friend implements Serializable
+public class Person implements Serializable
 {
 
     private static final long serialVersionUID = -758459502806858414L;
@@ -38,7 +38,7 @@ public class Friend implements Serializable
     private String mSSinceUpdate;
     private String mSUtilUpdate;
 
-    public Friend() {
+    public Person() {
         mId = UUID.randomUUID();
     }
 
@@ -123,7 +123,7 @@ public class Friend implements Serializable
         return mName.toString();
     }
 
-    public Friend(JSONObject json) throws JSONException {
+    public Person(JSONObject json) throws JSONException {
         mId = UUID.fromString(json.getString(JSON_ID));
         mName = json.getString(JSON_NAME);
         mPhoneNumber = json.getString(JSON_PHONENUMNER);
